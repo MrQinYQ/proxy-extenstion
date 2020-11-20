@@ -1,13 +1,6 @@
 import React from 'react';
 import './App.css';
 
-interface SwitchInterface {
-
-}
-
-const Switch: React.FunctionComponent<SwitchInterface> = (props) => {
-  return <input type="switch" />
-}
 
 function Form () {
   return <form>
