@@ -74,6 +74,7 @@ function proxyClear () {
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function proxySubmit () {
   chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
     if (tabs.length > 1 || tabs.length === 0) {
