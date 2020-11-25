@@ -23,7 +23,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   }
 })
 
-function proxyReset (tab: chrome.tabs.Tab) {
+function proxyReset (tab) {
   if (tab.url === undefined) {
     console.error('url is empty');
     return;
@@ -35,12 +35,12 @@ function proxyReset (tab: chrome.tabs.Tab) {
     return ;
   }
   const proxysStr = localStorage.getItem('proxys');
-  const proxys: Rule[] = proxysStr ? JSON.parse(proxysStr) : [];
-  const pacHttpList: string[] = [];
-  const pacHttpsList: string[] = [];
+  const proxys = proxysStr ? JSON.parse(proxysStr) : [];
+  const pacHttpList = [];
+  const pacHttpsList = [];
   proxys.filter((item) => item.enable).filter((item) => {
     const reg = new RegExp(item.reg)
-    if (reg.test(tab.url!)) {
+    if (reg.test(tab.url)) {
       return true;
     } else {
       return false;

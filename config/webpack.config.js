@@ -1,4 +1,4 @@
-'use strict';
+
 
 const fs = require('fs');
 const path = require('path');
@@ -73,6 +73,68 @@ const hasJsxRuntime = (() => {
     return false;
   }
 })();
+
+const getHtmlWebpackPlugin = (isEnvProduction) => {
+  if (paths.multiplePage) {
+    return paths.indexJsList.map(item => {
+      return new HtmlWebpackPlugin(
+        Object.assign(
+          {},
+          {
+            inject: true,
+            chunks: [item.name],
+            template: paths.appHtml,
+            filename: item.name + '.html'
+          },
+          isEnvProduction
+            ? {
+                minify: {
+                  removeComments: true,
+                  collapseWhitespace: true,
+                  removeRedundantAttributes: true,
+                  useShortDoctype: true,
+                  removeEmptyAttributes: true,
+                  removeStyleLinkTypeAttributes: true,
+                  keepClosingSlash: true,
+                  minifyJS: true,
+                  minifyCSS: true,
+                  minifyURLs: true,
+                },
+              }
+            : undefined
+        )
+      );
+    });
+  } else {
+    return [
+      new HtmlWebpackPlugin(
+        Object.assign(
+          {},
+          {
+            inject: true,
+            template: paths.appHtml,
+          },
+          isEnvProduction
+            ? {
+                minify: {
+                  removeComments: true,
+                  collapseWhitespace: true,
+                  removeRedundantAttributes: true,
+                  useShortDoctype: true,
+                  removeEmptyAttributes: true,
+                  removeStyleLinkTypeAttributes: true,
+                  keepClosingSlash: true,
+                  minifyJS: true,
+                  minifyCSS: true,
+                  minifyURLs: true,
+                },
+              }
+            : undefined
+        )
+      )
+    ]
+  }
+}
 
 // This is the production and development configuration.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
@@ -189,13 +251,37 @@ module.exports = function (webpackEnv) {
             // We include the app code last so that if there is a runtime error during
             // initialization, it doesn't blow up the WebpackDevServer client, and
             // changing JS code would still trigger a refresh.
-          ] : paths.indexJsList.map(item => {
-            return item.path;
-          }).unshift(webpackDevClientEntry)
+          ] : 
+          paths.indexJsList.reduce((prev, item) => {
+            prev[item.name] = [
+              webpackDevClientEntry, item.path
+            ]
+            return prev;
+          }, {})
+          // paths.indexJsList.unshift({
+          //   name: 'webpackDevClientEntry',
+          //   path: webpackDevClientEntry
+          // }).reduce((prev, item) => {
+          //   prev[item.name] = {
+          //     import: item.path,
+          //     filename: 'static/js/[name].js'
+          //   }
+          //   return prev;
+          // }, {})
         : !paths.multiplePage ? paths.appIndexJs : 
-        paths.indexJsList.map(item => {
-          return item.path;
-        }),
+        paths.indexJsList.reduce((prev, item) => {
+          prev[item.name] = [
+            item.path
+          ]
+          return prev;
+        }, {}),
+        // paths.indexJsList.reduce((prev, item) => {
+        //     prev[item.name] = {
+        //       import: item.path,
+        //       filename: 'static/js/[name].js'
+        //     }
+        //     return prev;
+        //   }, {}),
     output: {
       // The build folder.
       path: isEnvProduction ? paths.appBuild : undefined,
@@ -205,7 +291,7 @@ module.exports = function (webpackEnv) {
       // In development, it does not produce real files.
       filename: isEnvProduction
         ? 'static/js/[name].[contenthash:8].js'
-        : isEnvDevelopment && 'static/js/bundle.js',
+        : isEnvDevelopment && 'static/js/[name].bundle.js',
       // TODO: remove this when upgrading to webpack 5
       futureEmitAssets: true,
       // There are also additional JS chunk files if you use code splitting.
@@ -552,36 +638,12 @@ module.exports = function (webpackEnv) {
     },
     plugins: [
       // Generates an `index.html` file with the <script> injected.
-      new HtmlWebpackPlugin(
-        Object.assign(
-          {},
-          {
-            inject: true,
-            template: paths.appHtml,
-          },
-          isEnvProduction
-            ? {
-                minify: {
-                  removeComments: true,
-                  collapseWhitespace: true,
-                  removeRedundantAttributes: true,
-                  useShortDoctype: true,
-                  removeEmptyAttributes: true,
-                  removeStyleLinkTypeAttributes: true,
-                  keepClosingSlash: true,
-                  minifyJS: true,
-                  minifyCSS: true,
-                  minifyURLs: true,
-                },
-              }
-            : undefined
-        )
-      ),
+      ...getHtmlWebpackPlugin(isEnvProduction),
       // Inlines the webpack runtime script. This script is too small to warrant
       // a network request.
       // https://github.com/facebook/create-react-app/issues/5358
       isEnvProduction &&
-        shouldInlineRuntimeChunk &&
+        shouldInlineRuntimeChunk && !paths.multiplePage &&
         new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+[.]js/]),
       // Makes some environment variables available in index.html.
       // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
@@ -638,7 +700,7 @@ module.exports = function (webpackEnv) {
       //   `index.html`
       // - "entrypoints" key: Array of files which are included in `index.html`,
       //   can be used to reconstruct the HTML if necessary
-      new ManifestPlugin({
+      !paths.multiplePage && new ManifestPlugin({
         fileName: 'asset-manifest.json',
         publicPath: paths.publicUrlOrPath,
         generate: (seed, files, entrypoints) => {

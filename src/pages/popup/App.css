@@ -36,3 +36,37 @@
     transform: rotate(360deg);
   }
 }
+
+.App {
+  width: 320px;
+}
+
+.form {
+  padding: 10px;
+}
+
+.form-item {
+  display: flex;
+}
+
+.reg {
+  flex-basis: 100px;
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+.hosts {
+  flex-basis: 200px;
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+.host {
+  display: flex;
+  justify-content: space-around;
+}
+
+.host > * {
+  flex-grow: 1;
+  flex-shrink: 1;
+}

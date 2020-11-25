@@ -16,36 +16,52 @@ function reducer(state: globalSetting, action: { type: string, payload?: any }) 
       };
     case 'ruleSwitchChange':
       state.proxys[action.payload!.ruleIndex].enable = action.payload!.val;
-      return state;
+      return {
+        ...state
+      };
     case 'ruleRegChange':
       state.proxys[action.payload!.ruleIndex].reg = action.payload!.val;
-      return state;
+      return {
+        ...state
+      };
     case 'ruleAddHost': 
       state.proxys[action.payload].hosts.push({
         domain: '',
         ip: '',
         enable: true
       })
-      return state;
+      return {
+        ...state
+      };
     case 'ruleSubHost':
       state.proxys[action.payload!.ruleIndex].hosts.splice(action.payload!.hostIndex, 1);
-      return state;
+      return {
+        ...state
+      };
     case 'hostSwitchChange':
       state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].enable = action.payload!.val;
-      return state;
+      return {
+        ...state
+      };
     case 'addRule':
       state.proxys.push({
         enable: true,
         reg: '',
         hosts: []
       })
-      return state;
+      return {
+        ...state
+      };
     case 'hostDomainChange':
       state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].domain = action.payload!.val;
-      return state;
+      return {
+        ...state
+      };
     case 'hostIpChange':
       state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].ip = action.payload!.val;
-      return state;
+      return {
+        ...state
+      };
     case 'submit':
       localStorage.setItem('globalEnable', state.globalEnable ? 'true' : 'false');
       localStorage.setItem('proxys', JSON.stringify(state.proxys));
@@ -53,7 +69,9 @@ function reducer(state: globalSetting, action: { type: string, payload?: any }) 
       if (bgp) {
         bgp.proxySubmit?.()
       }
-      return state;
+      return {
+        ...state
+      };
     default:
       throw new Error();
   }
@@ -84,7 +102,7 @@ function Form () {
     </div>
     {
       state.proxys.map((rule, ruleIndex) => {
-        return <div className="form-item">
+        return <div key={ruleIndex} className="form-item">
           <div className="reg">
             <Switch checked={rule.enable} onChange={(val) => dispatch({ type: 'ruleSwitchChange', payload: { val, ruleIndex} })} />
             <input value={rule.reg} onChange={(val) => dispatch({ type: 'ruleRegChange', payload: { val, ruleIndex } })} />
@@ -92,7 +110,7 @@ function Form () {
           <div className="hosts">
             {
               rule.hosts.map((host, hostIndex) => {
-                return <div className="host">
+                return <div key={hostIndex} className="host">
                   <Switch checked={host.enable} onChange={(val) => dispatch({ type: 'hostSwitchChange', payload: { val, ruleIndex, hostIndex } })} />
                   <input value={host.domain} onChange={(val) => dispatch({ type: 'hostDomainChange', payload: {val, ruleIndex, hostIndex} })}/>
                   <input value={host.ip} onChange={(val) => dispatch({ type: 'hostIpChange', payload: {val, ruleIndex, hostIndex} })} />
