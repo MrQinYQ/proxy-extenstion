@@ -71,10 +71,7 @@ const reducer = produce((state: Draft<globalSetting>, action: { type: string, pa
     case 'submit':
       localStorage.setItem('globalEnable', state.globalEnable ? 'true' : 'false');
       localStorage.setItem('proxys', JSON.stringify(state.proxys));
-      const bgp = chrome.extension.getBackgroundPage();
-      if (bgp) {
-        bgp.proxySubmit();
-      }
+      chrome.extension.getBackgroundPage()?.proxySubmit();
       return
     default:
       throw new Error();
@@ -102,7 +99,7 @@ function App () {
   const [state, dispatch] = React.useReducer(reducer, initialState, initializer);
   return <div className={styles.App}>
     <form className={styles.form}>
-      <div key="global" className={styles.formItem}>
+      <div className={styles.formItem}>
         <span>扩展开关：</span>
         <Switch checked={state.globalEnable} onChange={(val) => dispatch({ type: 'globalEnableChange', payload: val })} />
       </div>
@@ -118,8 +115,8 @@ function App () {
                 rule.hosts.map((host, hostIndex) => {
                   return <div key={hostIndex} className={styles.host}>
                     <Switch checked={host.enable} onChange={(val) => dispatch({ type: 'hostSwitchChange', payload: { val, ruleIndex, hostIndex } })} />
-                    <input key="domain" placeholder="host: www.google.com" type="text" value={host.domain} onChange={(val) => dispatch({ type: 'hostDomainChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
-                    <input key="ip" placeholder="ip: 8.8.8.8" type="text" value={host.ip} onChange={(val) => dispatch({ type: 'hostIpChange', payload: {val: val.target.value, ruleIndex, hostIndex} })} />
+                    <input placeholder="host: www.google.com" type="text" value={host.domain} onChange={(val) => dispatch({ type: 'hostDomainChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
+                    <input placeholder="ip: 8.8.8.8" type="text" value={host.ip} onChange={(val) => dispatch({ type: 'hostIpChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
                     <button type="button" onClick={() => dispatch({ type: 'ruleSubHost', payload: { ruleIndex, hostIndex } })}>-</button>
                   </div>
                 })
@@ -132,10 +129,10 @@ function App () {
           </div>
         })
       }
-      <div key="add" className={styles.formItem}>
+      <div className={styles.formItem}>
         <button type="button" onClick={() => dispatch({ type: 'addRule' })}>增加代理规则</button>
       </div>
-      <div key="submit" className={styles.formItem}>
+      <div className={styles.formItem}>
         <button style={{ backgroundColor: '#1890ff', color: '#ffffff' }} type="button" onClick={() => dispatch({ type: 'submit' })}>保存生效</button>
       </div>
     </form>
