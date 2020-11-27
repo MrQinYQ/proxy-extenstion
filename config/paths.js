@@ -1,4 +1,4 @@
-'use strict';
+
 
 const path = require('path');
 const fs = require('fs');
@@ -60,13 +60,11 @@ function getEntries (globPaths) {
       entries[name] = './' + filepath;
     });
   }
-  console.log(entries);
   return entries;
 }
 
-const entries = getEntries(['src/pages/**/index.ts', 'src/pages/**/index.tsx', 'src/pages/**/index.js']);
-
 function getIndexJsList () {
+  const entries = getEntries(['src/pages/**/index.ts', 'src/pages/**/index.tsx', 'src/pages/**/index.js']);
   const indexJsList = [];
   Object.keys(entries).forEach((name) => {
     const indexjs = resolveModule(resolveApp, `src/pages/${name}/index`)
@@ -75,7 +73,6 @@ function getIndexJsList () {
       path: indexjs
     });
   })
-  console.log(indexJsList)
   return indexJsList;
 }
 

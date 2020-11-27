@@ -1,5 +1,6 @@
 import React from 'react';
-import useMergedState from '../hooks/useMergedState'
+import useMergedState from '../hooks/useMergedState';
+import styles from './Switch.module.less';
 
 export interface SwitchInterface {
     checked?: boolean,
@@ -28,7 +29,9 @@ const Switch: React.FunctionComponent<SwitchInterface> = (props) => {
         var ret = triggerChange(!innerChecked, e);
         onClick && onClick(ret, e);
     }
-    return <button type="button" role="switch" aria-checked={innerChecked} disabled={disabled} onClick={onInternalClick}></button>
+    return <button type="button" role="switch" className={`${styles.swtich} ${innerChecked ? styles.checked : ''}`} aria-checked={innerChecked} disabled={!!disabled} onClick={onInternalClick}>
+        <div className={styles.handle}></div>
+    </button>
 }
 
 export default Switch;

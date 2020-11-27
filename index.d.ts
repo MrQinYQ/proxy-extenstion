@@ -14,3 +14,7 @@ declare interface globalSetting {
     globalEnable: boolean;
     proxys: Rule[];
 }
+
+declare interface Window {
+    proxySubmit: () => void;
+}
