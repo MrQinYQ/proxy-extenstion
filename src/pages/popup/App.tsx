@@ -1,57 +1,6 @@
 import React from 'react';
 import styles from './App.module.less';
 import Switch from '../../components/Switch';
-// import produce, { Draft } from 'immer';
-
-// const reducer = produce((state: Draft<globalSetting>, action: { type: string, payload?: any }) => {
-//   switch (action.type) {
-//     case 'globalEnableChange':
-//       state.globalEnable = !!action.payload;
-//       return 
-//     case 'ruleSwitchChange':
-//       state.proxys[action.payload!.ruleIndex].enable = action.payload!.val;
-//       return 
-//     case 'ruleRegChange':
-//       state.proxys[action.payload!.ruleIndex].reg = action.payload!.val;
-//       return 
-//     case 'ruleAddHost': 
-//       state.proxys[action.payload].hosts.push({
-//         domain: '',
-//         ip: '',
-//         enable: true
-//       })
-//       return 
-//     case 'ruleSubHost':
-//       state.proxys[action.payload!.ruleIndex].hosts.splice(action.payload!.hostIndex, 1);
-//       return 
-//     case 'hostSwitchChange':
-//       state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].enable = action.payload!.val;
-//       return 
-//     case 'addRule':
-//       state.proxys.push({
-//         enable: true,
-//         reg: '',
-//         hosts: []
-//       })
-//       return 
-//     case 'delRule':
-//       state.proxys.splice(action.payload, 1);
-//       return
-//     case 'hostDomainChange':
-//       state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].domain = action.payload!.val;
-//       return
-//     case 'hostIpChange':
-//       state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].ip = action.payload!.val;
-//       return
-//     case 'submit':
-//       localStorage.setItem('globalEnable', state.globalEnable ? 'true' : 'false');
-//       localStorage.setItem('proxys', JSON.stringify(state.proxys));
-//       chrome.extension.getBackgroundPage()?.proxySubmit();
-//       return
-//     default:
-//       throw new Error();
-//   }
-// })
 
 const reducer: (state: globalSetting, action: {
   type: string;
