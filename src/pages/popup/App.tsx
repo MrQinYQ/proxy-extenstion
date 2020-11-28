@@ -1,82 +1,229 @@
 import React from 'react';
 import styles from './App.module.less';
 import Switch from '../../components/Switch';
-import produce, { Draft } from 'immer';
+// import produce, { Draft } from 'immer';
+
+// const reducer = produce((state: Draft<globalSetting>, action: { type: string, payload?: any }) => {
+//   switch (action.type) {
+//     case 'globalEnableChange':
+//       state.globalEnable = !!action.payload;
+//       return 
+//     case 'ruleSwitchChange':
+//       state.proxys[action.payload!.ruleIndex].enable = action.payload!.val;
+//       return 
+//     case 'ruleRegChange':
+//       state.proxys[action.payload!.ruleIndex].reg = action.payload!.val;
+//       return 
+//     case 'ruleAddHost': 
+//       state.proxys[action.payload].hosts.push({
+//         domain: '',
+//         ip: '',
+//         enable: true
+//       })
+//       return 
+//     case 'ruleSubHost':
+//       state.proxys[action.payload!.ruleIndex].hosts.splice(action.payload!.hostIndex, 1);
+//       return 
+//     case 'hostSwitchChange':
+//       state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].enable = action.payload!.val;
+//       return 
+//     case 'addRule':
+//       state.proxys.push({
+//         enable: true,
+//         reg: '',
+//         hosts: []
+//       })
+//       return 
+//     case 'delRule':
+//       state.proxys.splice(action.payload, 1);
+//       return
+//     case 'hostDomainChange':
+//       state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].domain = action.payload!.val;
+//       return
+//     case 'hostIpChange':
+//       state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].ip = action.payload!.val;
+//       return
+//     case 'submit':
+//       localStorage.setItem('globalEnable', state.globalEnable ? 'true' : 'false');
+//       localStorage.setItem('proxys', JSON.stringify(state.proxys));
+//       chrome.extension.getBackgroundPage()?.proxySubmit();
+//       return
+//     default:
+//       throw new Error();
+//   }
+// })
+
+const reducer: (state: globalSetting, action: {
+  type: string;
+  payload?: any;
+}) => globalSetting = (state: globalSetting, action: { type: string, payload?: any }) => {
+  switch (action.type) {
+    case 'globalEnableChange':
+      return {
+        globalEnable: !!action.payload,
+        proxys: state.proxys
+      }
+    case 'ruleSwitchChange':
+      return {
+        ...state,
+        proxys: state.proxys.map((item, index, array) => {
+          if (index === action.payload!.ruleIndex) {
+            return {
+              ...item,
+              enable: action.payload!.val
+            }
+          } else {
+            return item;
+          }
+        })
+      }
+    case 'ruleRegChange':
+      return {
+        ...state,
+        proxys: state.proxys.map((item, index, array) => {
+          if (index === action.payload!.ruleIndex) {
+            return {
+              ...item,
+              reg: action.payload!.val
+            }
+          } else {
+            return item;
+          }
+        })
+      }
+    case 'ruleAddHost': 
+      return {
+        ...state,
+        proxys: state.proxys.map((proxy, index, array) => {
+          if (index === action.payload) {
+            return {
+              ...proxy,
+              hosts: [...proxy.hosts, {
+                domain: '',
+                ip: '',
+                enable: true
+              }]
+            }
+          } else {
+            return proxy
+          }
+        })
+      }
+    case 'ruleSubHost':
+      return {
+        ...state,
+        proxys: state.proxys.map((proxy, index, array) => {
+          if (index === action.payload!.ruleIndex) {
+            return {
+              ...proxy,
+              hosts: proxy.hosts.filter((host, hostIndex) => {
+                return hostIndex !== action.payload!.hostIndex;
+              })
+            }
+          } else {
+            return proxy
+          }
+        })
+      }
+    case 'hostSwitchChange':
+      return {
+        ...state,
+        proxys: state.proxys.map((proxy, index, array) => {
+          if (index === action.payload!.ruleIndex) {
+            return {
+              ...proxy,
+              hosts: proxy.hosts.map((host, hostIndex) => {
+                if (hostIndex === action.payload!.hostIndex) {
+                  return {
+                    ...host,
+                    enable: action.payload!.val
+                  }
+                } else {
+                  return host;
+                }
+              })
+            }
+          } else {
+            return proxy;
+          }
+        })
+      }
+    case 'addRule':
+      return {
+        ...state,
+        proxys: [...state.proxys, {
+          enable: true,
+          reg: '',
+          hosts: []
+        }]
+      }
+    case 'delRule':
+      return {
+        ...state,
+        proxys: state.proxys.filter((proxy, ruleIndex) => {
+          return ruleIndex !== action.payload
+        })
+      }
+    case 'hostDomainChange':
+      return {
+        ...state,
+        proxys: state.proxys.map((proxy, index, array) => {
+          if (index === action.payload!.ruleIndex) {
+            return {
+              ...proxy,
+              hosts: proxy.hosts.map((host, hostIndex) => {
+                if (hostIndex === action.payload!.hostIndex) {
+                  return {
+                    ...host,
+                    domain: action.payload!.val
+                  }
+                } else {
+                  return host;
+                }
+              })
+            }
+          } else {
+            return proxy;
+          }
+        })
+      }
+    case 'hostIpChange':
+      return {
+        ...state,
+        proxys: state.proxys.map((proxy, index, array) => {
+          if (index === action.payload!.ruleIndex) {
+            return {
+              ...proxy,
+              hosts: proxy.hosts.map((host, hostIndex) => {
+                if (hostIndex === action.payload!.hostIndex) {
+                  return {
+                    ...host,
+                    ip: action.payload!.val
+                  }
+                } else {
+                  return host;
+                }
+              })
+            }
+          } else {
+            return proxy;
+          }
+        })
+      }
+    case 'submit':
+      localStorage.setItem('globalEnable', state.globalEnable ? 'true' : 'false');
+      localStorage.setItem('proxys', JSON.stringify(state.proxys));
+      chrome.extension.getBackgroundPage()?.proxySubmit();
+      return state;
+    default:
+      throw new Error();
+  }
+}
 
 const initialState: globalSetting = {
   globalEnable: false,
   proxys: []
 };
-
-const reducer = produce((state: Draft<globalSetting>, action: { type: string, payload?: any }) => {
-  switch (action.type) {
-    case 'globalEnableChange':
-      state.globalEnable = !!action.payload;
-      return 
-    case 'ruleSwitchChange':
-      state.proxys[action.payload!.ruleIndex].enable = action.payload!.val;
-      return 
-    case 'ruleRegChange':
-      state.proxys[action.payload!.ruleIndex].reg = action.payload!.val;
-      return 
-    case 'ruleAddHost': 
-      state.proxys[action.payload].hosts.push({
-        domain: '',
-        ip: '',
-        enable: true
-      })
-      return 
-    case 'ruleSubHost':
-      state.proxys[action.payload!.ruleIndex].hosts.splice(action.payload!.hostIndex, 1);
-      return 
-    case 'hostSwitchChange':
-      state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].enable = action.payload!.val;
-      return 
-    case 'addRule':
-      state.proxys.push({
-        enable: true,
-        reg: '',
-        hosts: []
-      })
-      return 
-      // 如下代码有问题，state is immutable 具体原因有待排查(reducer函数可能执行多次？)
-      // state.proxys = [...state.proxys, {
-      //   enable: true,
-      //   reg: '',
-      //   hosts: []
-      // }]
-      // return {
-      //   globalEnable: state.globalEnable,
-      //   proxys: state.proxys
-      // };
-      // 如下是不使用immer正确的写法
-      // const newProxys = [...state.proxys, {
-      //   enable: true,
-      //   reg: '',
-      //   hosts: []
-      // }]
-      // return {
-      //   globalEnable: state.globalEnable,
-      //   proxys: newProxys
-      // };
-    case 'delRule':
-      state.proxys.splice(action.payload, 1);
-      return
-    case 'hostDomainChange':
-      state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].domain = action.payload!.val;
-      return
-    case 'hostIpChange':
-      state.proxys[action.payload!.ruleIndex].hosts[action.payload!.hostIndex].ip = action.payload!.val;
-      return
-    case 'submit':
-      localStorage.setItem('globalEnable', state.globalEnable ? 'true' : 'false');
-      localStorage.setItem('proxys', JSON.stringify(state.proxys));
-      chrome.extension.getBackgroundPage()?.proxySubmit();
-      return
-    default:
-      throw new Error();
-  }
-})
 
 function initializer() {
   const proxyStr = localStorage.getItem('proxys');
@@ -115,8 +262,8 @@ function App () {
                 rule.hosts.map((host, hostIndex) => {
                   return <div key={hostIndex} className={styles.host}>
                     <Switch checked={host.enable} onChange={(val) => dispatch({ type: 'hostSwitchChange', payload: { val, ruleIndex, hostIndex } })} />
-                    <input placeholder="host: www.google.com" type="text" value={host.domain} onChange={(val) => dispatch({ type: 'hostDomainChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
-                    <input placeholder="ip: 8.8.8.8" type="text" value={host.ip} onChange={(val) => dispatch({ type: 'hostIpChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
+                    <input key={`input1_${hostIndex}`} placeholder="host: www.google.com" type="text" value={host.domain} onChange={(val) => dispatch({ type: 'hostDomainChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
+                    <input key={`input2_${hostIndex}`} placeholder="ip: 8.8.8.8" type="text" value={host.ip} onChange={(val) => dispatch({ type: 'hostIpChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
                     <button type="button" onClick={() => dispatch({ type: 'ruleSubHost', payload: { ruleIndex, hostIndex } })}>-</button>
                   </div>
                 })
