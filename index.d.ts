@@ -13,6 +13,7 @@ declare interface Rule {
 declare interface globalSetting {
     globalEnable: boolean;
     proxys: Rule[];
+    submitEnable: boolean;
 }
 
 declare interface Window {

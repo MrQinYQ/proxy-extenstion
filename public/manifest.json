@@ -2,7 +2,7 @@
     "name": "proxy extention",
     "version": "1.0",
     "description": "Build an Extension!",
-    "permissions": ["declarativeContent", "storage", "proxy", "tabs"],
+    "permissions": ["declarativeContent", "storage", "proxy", "tabs", "notifications"],
     "background": {
         "page": "background.html"
     },

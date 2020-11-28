@@ -61,11 +61,13 @@ const reducer: (state: globalSetting, action: {
     case 'globalEnableChange':
       return {
         globalEnable: !!action.payload,
+        submitEnable: true,
         proxys: state.proxys
       }
     case 'ruleSwitchChange':
       return {
         ...state,
+        submitEnable: true,
         proxys: state.proxys.map((item, index, array) => {
           if (index === action.payload!.ruleIndex) {
             return {
@@ -80,6 +82,7 @@ const reducer: (state: globalSetting, action: {
     case 'ruleRegChange':
       return {
         ...state,
+        submitEnable: true,
         proxys: state.proxys.map((item, index, array) => {
           if (index === action.payload!.ruleIndex) {
             return {
@@ -94,6 +97,7 @@ const reducer: (state: globalSetting, action: {
     case 'ruleAddHost': 
       return {
         ...state,
+        submitEnable: true,
         proxys: state.proxys.map((proxy, index, array) => {
           if (index === action.payload) {
             return {
@@ -112,6 +116,7 @@ const reducer: (state: globalSetting, action: {
     case 'ruleSubHost':
       return {
         ...state,
+        submitEnable: true,
         proxys: state.proxys.map((proxy, index, array) => {
           if (index === action.payload!.ruleIndex) {
             return {
@@ -128,6 +133,7 @@ const reducer: (state: globalSetting, action: {
     case 'hostSwitchChange':
       return {
         ...state,
+        submitEnable: true,
         proxys: state.proxys.map((proxy, index, array) => {
           if (index === action.payload!.ruleIndex) {
             return {
@@ -151,6 +157,7 @@ const reducer: (state: globalSetting, action: {
     case 'addRule':
       return {
         ...state,
+        submitEnable: true,
         proxys: [...state.proxys, {
           enable: true,
           reg: '',
@@ -160,6 +167,7 @@ const reducer: (state: globalSetting, action: {
     case 'delRule':
       return {
         ...state,
+        submitEnable: true,
         proxys: state.proxys.filter((proxy, ruleIndex) => {
           return ruleIndex !== action.payload
         })
@@ -167,6 +175,7 @@ const reducer: (state: globalSetting, action: {
     case 'hostDomainChange':
       return {
         ...state,
+        submitEnable: true,
         proxys: state.proxys.map((proxy, index, array) => {
           if (index === action.payload!.ruleIndex) {
             return {
@@ -190,6 +199,7 @@ const reducer: (state: globalSetting, action: {
     case 'hostIpChange':
       return {
         ...state,
+        submitEnable: true,
         proxys: state.proxys.map((proxy, index, array) => {
           if (index === action.payload!.ruleIndex) {
             return {
@@ -214,7 +224,16 @@ const reducer: (state: globalSetting, action: {
       localStorage.setItem('globalEnable', state.globalEnable ? 'true' : 'false');
       localStorage.setItem('proxys', JSON.stringify(state.proxys));
       chrome.extension.getBackgroundPage()?.proxySubmit();
-      return state;
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: '/logo192.png',
+        title: '设置已保存并生效',
+        message: '切换到符合规则的tab查看效果吧～'
+      }, () => {})
+      return {
+        ...state,
+        submitEnable: false
+      };
     default:
       throw new Error();
   }
@@ -222,7 +241,8 @@ const reducer: (state: globalSetting, action: {
 
 const initialState: globalSetting = {
   globalEnable: false,
-  proxys: []
+  proxys: [],
+  submitEnable: false
 };
 
 function initializer() {
@@ -238,45 +258,9 @@ function initializer() {
   }
   return {
     globalEnable,
-    proxys
+    proxys,
+    submitEnable: false
   }
-}
-
-function Host (props: { hostIndex: number, host: Host, proxyIndex: number, proxy: Rule, dispatch: React.Dispatch<{
-  type: string;
-  payload?: any;
-}> }) {
-  const { host, hostIndex, proxyIndex: ruleIndex, dispatch } = props;
-  return <div key={hostIndex} className={styles.host}>
-  <Switch checked={host.enable} onChange={(val) => dispatch({ type: 'hostSwitchChange', payload: { val, ruleIndex, hostIndex } })} />
-  <input key={`input1_${hostIndex}`} placeholder="host: www.google.com" type="text" value={host.domain} onChange={(val) => dispatch({ type: 'hostDomainChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
-  <input key={`input2_${hostIndex}`} placeholder="ip: 8.8.8.8" type="text" value={host.ip} onChange={(val) => dispatch({ type: 'hostIpChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
-  <button type="button" onClick={() => dispatch({ type: 'ruleSubHost', payload: { ruleIndex, hostIndex } })}>-</button>
-</div>
-}
-
-function Proxy (props: { proxyIndex: number, proxy: Rule, dispatch: React.Dispatch<{
-  type: string;
-  payload?: any;
-}> }) {
-  const { dispatch, proxy: rule, proxyIndex: ruleIndex } = props;
-  return <div className={styles.formItem}>
-  <div className={styles.reg}>
-    <Switch checked={rule.enable} onChange={(val) => dispatch({ type: 'ruleSwitchChange', payload: { val, ruleIndex} })} />
-    <input placeholder="生效tab正则：*.google.com，localhost:8080" type="text" value={rule.reg} onChange={(val) => dispatch({ type: 'ruleRegChange', payload: { val: val.target.value, ruleIndex } })} />
-  </div>
-  <div className={styles.hosts}>
-    {
-      rule.hosts.map((host, hostIndex) => {
-        return <Host key={hostIndex} hostIndex={hostIndex} host={host} proxyIndex={ruleIndex} proxy={rule} dispatch={dispatch} />
-      })
-    }
-    <div className={styles.host}>
-      <button type="button" onClick={() => dispatch({ type: 'ruleAddHost', payload: ruleIndex })}>增加host规则</button>
-      <button type="button" onClick={() => dispatch({ type: 'delRule', payload: ruleIndex })}>删除代理规则</button>
-    </div>
-  </div>
-</div>
 }
 
 function App () {
@@ -287,7 +271,7 @@ function App () {
         <span>扩展开关：</span>
         <Switch checked={state.globalEnable} onChange={(val) => dispatch({ type: 'globalEnableChange', payload: val })} />
       </div>
-      {/* {
+      {
         state.proxys.map((rule, ruleIndex, array) => {
           return <div key={ruleIndex} className={styles.formItem}>
             <div className={styles.reg}>
@@ -312,17 +296,12 @@ function App () {
             </div>
           </div>
         })
-      } */}
-      {
-        state.proxys.map((rule, ruleIndex, array) => {
-          return <Proxy proxy={rule} proxyIndex={ruleIndex} dispatch={dispatch} />
-        })
       }
       <div className={styles.formItem}>
         <button type="button" onClick={() => dispatch({ type: 'addRule' })}>增加代理规则</button>
       </div>
       <div className={styles.formItem}>
-        <button style={{ backgroundColor: '#1890ff', color: '#ffffff' }} type="button" onClick={() => dispatch({ type: 'submit' })}>保存生效</button>
+        <button disabled={!state.submitEnable} style={{ backgroundColor: '#1890ff', color: '#ffffff' }} type="button" onClick={() => dispatch({ type: 'submit' })}>保存生效</button>
       </div>
     </form>
   </div>

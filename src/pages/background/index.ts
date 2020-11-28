@@ -21,7 +21,7 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   console.log('onUpdated', changeInfo, tab)
-  if (changeInfo.url || tab.url) {
+  if (changeInfo.url && tab.url) {
     console.log('onUpdated call', tab)
     proxyReset(tab)
   }
@@ -30,7 +30,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 function proxyReset (tab: chrome.tabs.Tab) {
   console.log('proxyReset', tab)
   if (tab.url === undefined) {
-    console.error('url is empty');
+    console.log('url is empty');
     return;
   }
   const globalEnableStr = localStorage.getItem('globalEnable');
@@ -100,9 +100,21 @@ function proxyReset (tab: chrome.tabs.Tab) {
   if (pacHttpList.length > 0) {
     console.log(pacScript)
     chrome.proxy.settings.set({scope: 'regular', value:  {mode: 'pac_script', pacScript: {data: pacScript}}});
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: '/logo192.png',
+      title: '代理中',
+      message: '此tab.url已设置代理'
+    }, () => {})
   } else {
     console.log('system')
     chrome.proxy.settings.set({scope: 'regular', value: {mode: 'system'}});
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: '/logo192.png',
+      title: '未代理',
+      message: '此tab.url未设置代理'
+    }, () => {})
   }
 }
 
@@ -117,7 +129,7 @@ window.proxySubmit = function proxySubmit () {
   chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
     console.log('proxySubmit query', tabs)
     if (tabs.length > 1 || tabs.length === 0) {
-      console.error(`符合条件tabs个数异常: ${tabs.length}`);
+      console.log(`符合条件tabs个数异常: ${tabs.length}`);
       return ;
     }
     proxyReset(tabs[0]);
