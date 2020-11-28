@@ -242,6 +242,43 @@ function initializer() {
   }
 }
 
+function Host (props: { hostIndex: number, host: Host, proxyIndex: number, proxy: Rule, dispatch: React.Dispatch<{
+  type: string;
+  payload?: any;
+}> }) {
+  const { host, hostIndex, proxyIndex: ruleIndex, dispatch } = props;
+  return <div key={hostIndex} className={styles.host}>
+  <Switch checked={host.enable} onChange={(val) => dispatch({ type: 'hostSwitchChange', payload: { val, ruleIndex, hostIndex } })} />
+  <input key={`input1_${hostIndex}`} placeholder="host: www.google.com" type="text" value={host.domain} onChange={(val) => dispatch({ type: 'hostDomainChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
+  <input key={`input2_${hostIndex}`} placeholder="ip: 8.8.8.8" type="text" value={host.ip} onChange={(val) => dispatch({ type: 'hostIpChange', payload: {val: val.target.value, ruleIndex, hostIndex} })}/>
+  <button type="button" onClick={() => dispatch({ type: 'ruleSubHost', payload: { ruleIndex, hostIndex } })}>-</button>
+</div>
+}
+
+function Proxy (props: { proxyIndex: number, proxy: Rule, dispatch: React.Dispatch<{
+  type: string;
+  payload?: any;
+}> }) {
+  const { dispatch, proxy: rule, proxyIndex: ruleIndex } = props;
+  return <div className={styles.formItem}>
+  <div className={styles.reg}>
+    <Switch checked={rule.enable} onChange={(val) => dispatch({ type: 'ruleSwitchChange', payload: { val, ruleIndex} })} />
+    <input placeholder="生效tab正则：*.google.com，localhost:8080" type="text" value={rule.reg} onChange={(val) => dispatch({ type: 'ruleRegChange', payload: { val: val.target.value, ruleIndex } })} />
+  </div>
+  <div className={styles.hosts}>
+    {
+      rule.hosts.map((host, hostIndex) => {
+        return <Host key={hostIndex} hostIndex={hostIndex} host={host} proxyIndex={ruleIndex} proxy={rule} dispatch={dispatch} />
+      })
+    }
+    <div className={styles.host}>
+      <button type="button" onClick={() => dispatch({ type: 'ruleAddHost', payload: ruleIndex })}>增加host规则</button>
+      <button type="button" onClick={() => dispatch({ type: 'delRule', payload: ruleIndex })}>删除代理规则</button>
+    </div>
+  </div>
+</div>
+}
+
 function App () {
   const [state, dispatch] = React.useReducer(reducer, initialState, initializer);
   return <div className={styles.App}>
@@ -250,7 +287,7 @@ function App () {
         <span>扩展开关：</span>
         <Switch checked={state.globalEnable} onChange={(val) => dispatch({ type: 'globalEnableChange', payload: val })} />
       </div>
-      {
+      {/* {
         state.proxys.map((rule, ruleIndex, array) => {
           return <div key={ruleIndex} className={styles.formItem}>
             <div className={styles.reg}>
@@ -274,6 +311,11 @@ function App () {
               </div>
             </div>
           </div>
+        })
+      } */}
+      {
+        state.proxys.map((rule, ruleIndex, array) => {
+          return <Proxy proxy={rule} proxyIndex={ruleIndex} dispatch={dispatch} />
         })
       }
       <div className={styles.formItem}>
