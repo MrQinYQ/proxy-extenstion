@@ -109,12 +109,12 @@ function proxyReset (tab: chrome.tabs.Tab) {
   } else {
     console.log('system')
     chrome.proxy.settings.set({scope: 'regular', value: {mode: 'system'}});
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: '/logo192.png',
-      title: '未代理',
-      message: '此tab.url未设置代理'
-    }, () => {})
+    // chrome.notifications.create({
+    //   type: 'basic',
+    //   iconUrl: '/logo192.png',
+    //   title: '未代理',
+    //   message: '此tab.url未设置代理'
+    // }, () => {})
   }
 }
 
