@@ -29,7 +29,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 
 function proxyReset (tab: chrome.tabs.Tab) {
   console.log('proxyReset', tab)
-  if (tab.url === undefined) {
+  if (!tab.url && !tab.pendingUrl) {
     console.log('url is empty');
     return;
   }
@@ -45,7 +45,7 @@ function proxyReset (tab: chrome.tabs.Tab) {
   proxys.filter((item) => item.enable).filter((item) => {
     const reg = new RegExp(item.reg)
     console.log(reg)
-    if (reg.test(tab.url!)) {
+    if (reg.test(tab.url!) || ( tab.pendingUrl && reg.test(tab.pendingUrl) )) {
       return true;
     } else {
       return false;
