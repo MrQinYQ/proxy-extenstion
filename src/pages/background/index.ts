@@ -21,7 +21,7 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   console.log('onUpdated', changeInfo, tab)
-  if (changeInfo.url && tab.url) {
+  if (changeInfo.url || tab.url || tab.pendingUrl) {
     console.log('onUpdated call', tab)
     proxyReset(tab)
   }
