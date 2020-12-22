@@ -99,15 +99,22 @@ function proxyReset (tab: chrome.tabs.Tab) {
   `;
   if (pacHttpList.length > 0) {
     console.log(pacScript)
-    chrome.proxy.settings.set({scope: 'regular', value:  {mode: 'pac_script', pacScript: {data: pacScript}}});
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: '/logo192.png',
-      title: '代理中',
-      message: '此tab.url已设置代理'
-    }, () => {})
+    chrome.proxy.settings.get({}, (config) => {
+      console.log(config)
+      if (config.value && config.value.mode === 'pac_script' && config.value.pacScript && config.value.pacScript.data === pacScript) {
+        console.log('代理脚本相同，不重新设置');
+        return ;
+      }
+      chrome.proxy.settings.set({scope: 'regular', value:  {mode: 'pac_script', pacScript: {data: pacScript}}});
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: '/logo192.png',
+        title: '代理中',
+        message: '此tab.url已设置代理'
+      }, () => {})
+    });
   } else {
-    console.log('system')
+    console.log('system');
     chrome.proxy.settings.set({scope: 'regular', value: {mode: 'system'}});
     // chrome.notifications.create({
     //   type: 'basic',
